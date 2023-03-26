@@ -2,47 +2,52 @@ package mutex
 
 import (
 	"sync"
-
-	"golang.org/x/exp/constraints"
 )
 
-type MutexMap[K constraints.Ordered, V any] struct {
+// Map defines a mutex map
+type Map[K comparable, V any] struct {
 	mu sync.Mutex
 	m  map[K]V
 }
 
-func NewMutexMap[K constraints.Ordered, V any]() *MutexMap[K, V] {
-	return &MutexMap[K, V]{
+// NewMap creates a mutex map
+func NewMap[K comparable, V any]() *Map[K, V] {
+	return &Map[K, V]{
 		m: make(map[K]V),
 	}
 }
 
-func (mm *MutexMap[K, V]) Get(k K) (V, bool) {
+// Get gets a value
+func (mm *Map[K, V]) Get(k K) (V, bool) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
 	val, ok := mm.m[k]
 	return val, ok
 }
 
-func (mm *MutexMap[K, V]) Set(k K, v V) {
+// Set adds and updates key value
+func (mm *Map[K, V]) Set(k K, v V) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
 	mm.m[k] = v
 }
 
-func (mm *MutexMap[K, V]) Delete(k K) {
+// Delete deletes a key value
+func (mm *Map[K, V]) Delete(k K) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
 	delete(mm.m, k)
 }
 
-func (mm *MutexMap[K, V]) Inner() map[K]V {
+// Inner gets a inner map
+func (mm *Map[K, V]) Inner() map[K]V {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
 	return mm.inner()
 }
 
-func (mm *MutexMap[K, V]) Range(f func(store map[K]V, k K, v V)) {
+// Range ranges a map with mutable ref
+func (mm *Map[K, V]) Range(f func(store map[K]V, k K, v V)) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
 	innerMap := mm.inner()
@@ -51,7 +56,14 @@ func (mm *MutexMap[K, V]) Range(f func(store map[K]V, k K, v V)) {
 	}
 }
 
-func (mm *MutexMap[K, V]) inner() map[K]V {
+// Cap gets a map capacity
+func (mm *Map[K, V]) Cap() int {
+	mm.mu.Lock()
+	defer mm.mu.Unlock()
+	return len(mm.m)
+}
+
+func (mm *Map[K, V]) inner() map[K]V {
 	newMap := make(map[K]V)
 	for k, v := range mm.m {
 		newMap[k] = v
