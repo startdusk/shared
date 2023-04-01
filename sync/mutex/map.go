@@ -18,54 +18,72 @@ func NewMap[K comparable, V any]() *Map[K, V] {
 }
 
 // Get gets a value
-func (mm *Map[K, V]) Get(k K) (V, bool) {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	val, ok := mm.m[k]
+func (m *Map[K, V]) Get(k K) (V, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	val, ok := m.m[k]
 	return val, ok
 }
 
 // Set adds and updates key value
-func (mm *Map[K, V]) Set(k K, v V) {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	mm.m[k] = v
+func (m *Map[K, V]) Set(k K, v V) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.m[k] = v
 }
 
 // Delete deletes a key value
-func (mm *Map[K, V]) Delete(k K) {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	delete(mm.m, k)
+func (m *Map[K, V]) Delete(k K) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.m, k)
 }
 
 // Inner gets a inner map
-func (mm *Map[K, V]) Inner() map[K]V {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	return mm.inner()
+func (m *Map[K, V]) Inner() map[K]V {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.inner()
 }
 
 // Range ranges a map with mutable ref
-func (mm *Map[K, V]) Range(f func(store map[K]V, k K, v V)) {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	innerMap := mm.inner()
+func (m *Map[K, V]) Range(f func(store map[K]V, k K, v V)) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	innerMap := m.inner()
 	for k, v := range innerMap {
-		f(mm.m, k, v)
+		f(m.m, k, v)
 	}
 }
 
-// Cap gets a map capacity
-func (mm *Map[K, V]) Cap() int {
-	mm.mu.Lock()
-	defer mm.mu.Unlock()
-	return len(mm.m)
+// Len gets a map length
+func (m *Map[K, V]) Len() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.m)
 }
 
-func (mm *Map[K, V]) inner() map[K]V {
+// Swap replace the inner map
+func (m *Map[K, V]) Swap(newMap map[K]V) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if newMap == nil {
+		m.Clear()
+	} else {
+		m.m = newMap
+	}
+}
+
+// Clear renew the map
+func (m *Map[K, V]) Clear() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.m = make(map[K]V)
+}
+
+func (m *Map[K, V]) inner() map[K]V {
 	newMap := make(map[K]V)
-	for k, v := range mm.m {
+	for k, v := range m.m {
 		newMap[k] = v
 	}
 	return newMap

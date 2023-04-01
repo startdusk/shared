@@ -21,8 +21,8 @@ func TestMutexMapLifecycle(t *testing.T) {
 	assert.Equal(t, true, ok)
 	assert.Equal(t, v1, 2)
 
-	capacity := m.Cap()
-	assert.Equal(t, 1, capacity)
+	length := m.Len()
+	assert.Equal(t, 1, length)
 
 	// delete a key value
 	m.Delete(1)
@@ -30,8 +30,8 @@ func TestMutexMapLifecycle(t *testing.T) {
 	assert.Equal(t, false, ok)
 	assert.Equal(t, v2, 0)
 
-	capacity1 := m.Cap()
-	assert.Equal(t, 0, capacity1)
+	length1 := m.Len()
+	assert.Equal(t, 0, length1)
 
 	// range key value
 
